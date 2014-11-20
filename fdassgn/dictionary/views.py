@@ -33,6 +33,10 @@ def home(request):
         form = LongURL(request.POST)
         if form.is_valid():
             long_url = form.data['url']
+            if 'HTTP_HOST' in request.META:
+                host = request.META['HTTP_HOST']
+            else:
+                host = '/'
             try:
                 word = DictWord.objects.get(URL=long_url)
             except ObjectDoesNotExist:
@@ -42,7 +46,7 @@ def home(request):
                 print('Already assigned')
                 word.ts = datetime.now()
                 word.save()
-                messages.success(request, 'URL: %s/%s' % (request.META['HTTP_HOST'], word.word,))
+                messages.success(request, 'URL: %s/%s' % (host, word.word,))
                 return HttpResponseRedirect(reverse('home'))
 
             candidates = _get_candidates(long_url)
@@ -63,7 +67,7 @@ def home(request):
                     print('Run out. Reusing: %s' % elig_word.word)
                     elig_word.set_url(long_url)
 
-            messages.success(request, 'URL: %s/%s' % (request.META['HTTP_HOST'], elig_word.word))
+            messages.success(request, 'URL: %s/%s' % (host, elig_word.word))
             return HttpResponseRedirect(reverse('home'))
         else:
             return HttpResponse('URL is not valid')
