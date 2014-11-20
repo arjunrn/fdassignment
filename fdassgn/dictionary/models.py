@@ -1,4 +1,6 @@
-from django.db import models
+from datetime import datetime
+from django.db import models, transaction
+
 
 
 class DictWord(models.Model):
@@ -9,6 +11,12 @@ class DictWord(models.Model):
 
     def __str__(self):
         return self.word
+
+    def set_url(self, url):
+        with transaction.atomic():
+            self.ts = datetime.now()
+            self.URL = url
+            self.save()
 
     class Meta:
         verbose_name = 'Dictionary Word'
